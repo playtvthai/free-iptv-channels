@@ -1,0 +1,42 @@
+
+To configure Cross-Origin Resource Sharing (CORS) for your Cloudflare Pages project, you can utilize Pages Functions, which allow you to customize HTTP responses, including setting CORS headers. Here's how to set it up:
+
+1. Create a _worker.js File
+
+In the root directory of your project, create a file named _worker.js. This file will define the behavior of your Pages Functions.
+
+2. Define the CORS Headers in _worker.js
+
+Add the following code to _worker.js to set the necessary CORS headers:
+
+javascript
+คัดลอกโค้ด
+export default {
+  async fetch(request, env, ctx) {
+    // Handle preflight requests
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          'Access-Control-Allow-Origin': '*', // Replace '*' with specific origin if needed
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          'Access-Control-Max-Age': '86400', // Cache preflight response for 24 hours
+        },
+      });
+    }
+
+    // Handle other requests
+    const response = await env.ASSETS.fetch(request);
+    const newHeaders = new Headers(response.headers);
+    newHeaders.set('Access-Control-Allow-Origin', '*'); // Replace '*' with specific origin if needed
+
+    return new Response(response.body, {
+      ...response,
+      headers: newHeaders,
+    });
+  },
+};
+3. Deploy Your Project
+
+After adding _worker.js to your project, deploy it to Cloudflare Pages. The deployment process will automatically include the Pages Functions defi
